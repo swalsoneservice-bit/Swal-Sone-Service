@@ -7,6 +7,7 @@ A responsive static website for GitHub Pages, with individual event registration
 - Triathlon
 - Duathlon
 - Music Events
+- Finance & Accounting software profile
 
 Also includes service marketing pages for race timing software services and finance/accounting software.
 
@@ -37,8 +38,17 @@ Connect a backend/database and authenticated organizer dashboard (for example Su
 ## Customize
 
 - Edit event fields in each HTML profile.
+- `finance-accounting.html` is the dedicated finance & accounting service profile.
+- `assets/fun-run-profile.png` and `assets/finance-accounting.png` are the added artwork.
 - Edit design tokens and responsive styling in `styles.css`.
 - `app.js` controls the mobile menu and footer year.
 - `register.js` contains demo localStorage, editing, and CSV export logic.
 - Replace `hello@swal-sone-service.com` with your real contact address.
 - Google Fonts is used for typography; the site still renders with fallback fonts if unavailable.
+
+
+## Organizer Admin (demo only)
+- Open `admin.html` to view the password-gated Organizer Review and export all locally saved registrations as CSV.
+- Demo password: `ChangeMe2026!` (change `ADMIN_PASSWORD` in `admin.js` before sharing the site).
+- This password gate is client-side and is not real security. GitHub Pages is static; registrations are stored in each visitor's own browser, so the organizer cannot see participants' registrations across devices. Do not collect real NRC/passport, phone, or medical data until a secure backend/database and server-side authentication are implemented.
+- In Road Run, Fun Run, Trail Run, Triathlon and Duathlon profiles, choosing Student = Yes makes NRC/Passport No optional. Choosing No or leaving Student unselected requires the field.

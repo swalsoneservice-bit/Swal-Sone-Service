@@ -12,6 +12,16 @@ const formSection = $("#formSection");
 const summarySection = $("#summarySection");
 const summaryGrid = $("#summaryGrid");
 const recordIdInput = $("#recordId");
+const studentSelect = $("#student", form);
+const identityInput = $("#identity", form);
+function updateIdentityRequirement(){
+  if(!studentSelect || !identityInput) return;
+  const isStudent = studentSelect.value === "Yes";
+  identityInput.required = !isStudent;
+  const label = $("label[for=\"identity\"]", form);
+  if(label) label.textContent = isStudent ? "NRC (or) Passport No (optional for students)" : "NRC (or) Passport No *";
+}
+if(studentSelect){ studentSelect.addEventListener("change", updateIdentityRequirement); updateIdentityRequirement(); }
 let current = null;
 
 function makeId(){ return "SSS-" + new Date().getFullYear() + "-" + Math.random().toString(36).slice(2,8).toUpperCase(); }
@@ -48,7 +58,6 @@ $("#confirmSubmit").addEventListener("click",()=>{
   showStatus(`Saved successfully. Your demo registration ID is ${id}. Keep it to edit your entry later.`);
   $("#savedId").textContent=id;$("#savedPanel").classList.remove("hidden");
   $("#savedPanel").scrollIntoView({behavior:"smooth",block:"center"});
-  renderAdmin();
 });
 $("#newRegistration").addEventListener("click",()=>{ $("#savedPanel").classList.add("hidden");resetForm(); });
 $("#loadRecord").addEventListener("click",()=>{
@@ -57,23 +66,4 @@ $("#loadRecord").addEventListener("click",()=>{
  if(row.event!==slug){showStatus(`That ID belongs to ${row.eventName}. Please open that event's profile to edit it.`,true);return;}
  fillForm(row);recordIdInput.value=row.id;showForm();showStatus("Registration loaded. Edit the fields and review the summary before saving.");
 });
-$("#exportCsv").addEventListener("click",()=>{
- const rows=readAll().filter(r=>r.event===slug);
- if(!rows.length){showStatus("No saved registrations for this event in this browser yet.",true);return;}
- const keys=[...new Set(rows.flatMap(r=>Object.keys(r)))];
- const csv=[keys,...rows.map(r=>keys.map(k=>r[k]===undefined?"":r[k]))].map(line=>line.map(v=>{const s=String(v??"");return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\r\n");
- const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`swal-sone-${slug}-registrations.csv`;a.click();URL.revokeObjectURL(url);
- showStatus(`Exported ${rows.length} registration(s) to CSV.`);
-});
-function renderAdmin(){
- const body=$("#adminRows");if(!body)return;body.innerHTML="";
- const rows=readAll().filter(r=>r.event===slug);
- $("#recordCount").textContent=rows.length;
- rows.forEach(r=>{const tr=document.createElement("tr");[r.id,r.fullName||"",r.category||r.musicTicket||"",r.mobile||"",new Date(r.createdAt).toLocaleDateString()].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.append(td);});
- const td=document.createElement("td"),btn=document.createElement("button");btn.textContent="Edit";btn.addEventListener("click",()=>{fillForm(r);recordIdInput.value=r.id;showForm();showStatus("Loaded from this browser's demo storage. Make changes and save again.");window.scrollTo({top:0,behavior:"smooth"});});td.append(btn);tr.append(td);body.append(tr);});
- if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="No local demo registrations yet.";tr.append(td);body.append(tr);}
-}
-$("#refreshAdmin")?.addEventListener("click",renderAdmin);
-$("#clearLookup")?.addEventListener("click",()=>{$("#lookupId").value="";});
-renderAdmin();
 })();
