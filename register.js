@@ -6,6 +6,9 @@ const eventName = document.body.dataset.eventName || 'Event';
 const form = $('#registrationForm'), status = $('#formStatus'), formSection = $('#formSection'), summarySection = $('#summarySection'), summaryGrid = $('#summaryGrid'), recordIdInput = $('#recordId');
 const studentSelect = $('#student', form), identityInput = $('#identity', form);
 const API_URL = window.SSS_CONFIG?.API_URL || '';
+const capacityStatus=$('#capacityStatus');
+async function loadPublicCapacity(){if(!capacityStatus||slug!=='fun-run'||!API_URL||API_URL.includes('PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE'))return;try{const r=await fetch(API_URL+'?action=publicSettings');const d=await r.json();if(d.ok){capacityStatus.textContent=(d.funRunLimit>0?`Registrations: ${d.funRunCount} / ${d.funRunLimit}`:`Registrations open · ${d.funRunCount} registered`);if(d.funRunLimit>0&&d.funRunCount>=d.funRunLimit){capacityStatus.textContent='Registration is currently full.';const submit=form.querySelector('button[type=submit]');if(submit)submit.disabled=true;}}}catch(_){capacityStatus.textContent='';}}
+loadPublicCapacity();
 function updateIdentityRequirement(){ if(!studentSelect||!identityInput)return; const isStudent=studentSelect.value==='Yes'; identityInput.required=!isStudent; const label=$('label[for="identity"]',form); if(label)label.textContent=isStudent?'NRC (or) Passport No (optional for students)':'NRC (or) Passport No *'; }
 if(studentSelect){studentSelect.addEventListener('change',updateIdentityRequirement);updateIdentityRequirement();}
 let current=null;
@@ -22,13 +25,13 @@ $('#confirmSubmit').addEventListener('click',async()=>{
  const data=Object.assign({},current||getValues(),{event:slug,eventName});
  if($('#terms',form)&&!data.terms){showForm();showStatus('Please accept the Terms & Conditions before continuing.',true);return;}
  if(!apiConfigured()){showForm();showStatus('Registration database is not connected yet. Admin must add the Apps Script Web App URL in config.js.',true);return;}
- const button=$('#confirmSubmit');button.disabled=true;button.textContent='Submitting…';
+ const button=$('#confirmSubmit');button.disabled=true;button.textContent='Waiting…';const submitStatus=$('#submitStatus');if(submitStatus){submitStatus.textContent='Waiting — your registration is being submitted.';submitStatus.classList.remove('hidden','status-error');}
  try{
    const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'register',data})});
    const result=await response.json();if(!result.ok)throw new Error(result.error||'Could not save registration');
    summarySection.classList.add('hidden');formSection.classList.remove('hidden');form.reset();recordIdInput.value='';updateIdentityRequirement();
-   showStatus('Registration saved successfully. Your Registration ID is '+result.id+'. Please keep it for your records.');$('#savedId').textContent=result.id;$('#savedPanel').classList.remove('hidden');$('#savedPanel').scrollIntoView({behavior:'smooth',block:'center'});
- }catch(err){showForm();showStatus('Could not connect to the registration database: '+err.message+'. Please try again or contact the organizer.',true);}
+   const successMessage='Successful — your registration has been submitted. Registration ID: '+result.id+'. Please keep it for your records.';showStatus(successMessage);if(submitStatus){submitStatus.textContent=successMessage;submitStatus.classList.remove('hidden','status-error');}loadPublicCapacity();$('#savedId').textContent=result.id;$('#savedPanel').classList.remove('hidden');$('#savedPanel').scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(err){showForm();showStatus('Could not submit registration: '+err.message+'. Please try again or contact the organizer.',true);const submitStatus=$('#submitStatus');if(submitStatus){submitStatus.textContent='Submission failed: '+err.message;submitStatus.classList.remove('hidden');submitStatus.classList.add('status-error');}}
  finally{button.disabled=false;button.textContent='Confirm & Submit';}
 });
 $('#newRegistration').addEventListener('click',()=>{$('#savedPanel').classList.add('hidden');form.reset();recordIdInput.value='';current=null;updateIdentityRequirement();showForm();showStatus('Ready for a new registration.');});
