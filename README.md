@@ -52,3 +52,7 @@ Connect a backend/database and authenticated organizer dashboard (for example Su
 - Demo password: `ChangeMe2026!` (change `ADMIN_PASSWORD` in `admin.js` before sharing the site).
 - This password gate is client-side and is not real security. GitHub Pages is static; registrations are stored in each visitor's own browser, so the organizer cannot see participants' registrations across devices. Do not collect real NRC/passport, phone, or medical data until a secure backend/database and server-side authentication are implemented.
 - In Road Run, Fun Run, Trail Run, Triathlon and Duathlon profiles, choosing Student = Yes makes NRC/Passport No optional. Choosing No or leaving Student unselected requires the field.
+
+
+## Google Sheets Database Setup
+See `GOOGLE-SHEETS-SETUP-MY.md` for the step-by-step Burmese guide. Apps Script source is in `google-apps-script/Code.gs`. Configure your deployed `/exec` URL in `config.js` before publishing.
